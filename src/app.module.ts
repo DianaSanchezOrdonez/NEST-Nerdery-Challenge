@@ -17,8 +17,20 @@ import { ShoppingCardController } from './shopping-card/shopping-card.controller
 import { ShoppingCardModule } from './shopping-card/shopping-card.module';
 
 @Module({
-  imports: [UsersModule, AuthModule, CommonModule, AuthorModule, ItemModule, ShoppingCardModule],
-  controllers: [AppController, AuthorController, ItemController, ShoppingCardController],
+  imports: [
+    UsersModule,
+    AuthModule,
+    CommonModule,
+    AuthorModule,
+    ItemModule,
+    ShoppingCardModule,
+  ],
+  controllers: [
+    AppController,
+    AuthorController,
+    ItemController,
+    ShoppingCardController,
+  ],
   providers: [
     AppService,
     PrismaService,
