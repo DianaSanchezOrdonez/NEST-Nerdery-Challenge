@@ -1,4 +1,4 @@
-import { Status } from 'common/enums/status.enum';
+import { Status } from '../../common/enums/status.enum';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 
 export class ShoppingStatus {

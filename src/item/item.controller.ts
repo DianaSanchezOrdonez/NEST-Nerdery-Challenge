@@ -6,7 +6,7 @@ import {
   UseGuards,
   Get,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ArrayCardItemsDto } from './dto/array-card-items.dto';
 import { CreateItemDto } from './dto/create-item.dto';
 import { ItemCardDto } from './dto/item-card.dto';

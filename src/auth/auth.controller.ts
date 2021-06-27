@@ -6,7 +6,9 @@ import {
   Body,
   Param,
   Get,
+  Patch,
 } from '@nestjs/common';
+import { UpdateInfoDto } from 'users/dto/update-user.dto';
 import { InputInfoUserDto } from '../users/dto/input-user.dto';
 import { AuthService } from './auth.service';
 import { MessageDto } from './dto/message.dto';
@@ -36,6 +38,13 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('protected')
   protect(@Request() req) {
+    console.log(req.user);
     return req.user;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('logout')
+  async logout(@Request() req): Promise<UpdateInfoDto> {
+    return this.authService.signOut(req.user.id);
   }
 }

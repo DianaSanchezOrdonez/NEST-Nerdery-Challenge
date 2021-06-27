@@ -1,46 +1,59 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDto } from './dto/user.dto';
-import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../common/services/prisma.service';
 import { plainToClass } from 'class-transformer';
 import { UpdateInfoDto } from './dto/update-user.dto';
 import { ResponseUpdateInfoDto } from './dto/responseUser.dto';
+import { InputInfoUserDto } from './dto/input-user.dto';
+import { generatePassword } from '../common/helpers/generator-hash.helper';
+import { Role } from '../common/enums/role.enum';
+
 @Injectable()
 export class UsersService {
   constructor(private prismaService: PrismaService) {}
 
   async getUsers() {
-    try {
-      const users = await this.prismaService.user.findMany();
-      return users;
-    } catch (e) {
-      console.log(e.message);
-    }
-  }
-
-  async generatePassword(plainPassword: string): Promise<string> {
-    if (!plainPassword) {
-      throw new UnprocessableEntityException('Password cant be empty ');
-    }
-    const hashed = await bcrypt.hash(plainPassword, 10);
-    return hashed;
+    return await this.prismaService.user.findMany();
   }
 
   async createUser(
-    createUserDto: CreateUserDto,
+    createUserDto: InputInfoUserDto,
     tokenEmail: string,
   ): Promise<UserDto> {
-    const passwordHashed = await this.generatePassword(createUserDto.password);
+    const { username, email } = createUserDto;
+    const user = await this.uniqueEmailOrUsername(username, email);
+    if (user) throw new BadRequestException('Username or email already exists');
+    const passwordHashed = await generatePassword(createUserDto.password);
     return await this.prismaService.user.create({
       data: {
-        username: createUserDto.username,
-        email: createUserDto.email,
+        username,
+        email,
         password: passwordHashed,
         firstName: '',
         lastName: '',
         role: 'CLIENT',
         hashActivation: tokenEmail,
+      },
+    });
+  }
+
+  async uniqueEmailOrUsername(username: string, email: string) {
+    return await this.prismaService.user.findFirst({
+      where: {
+        OR: [
+          {
+            username,
+          },
+          {
+            email,
+          },
+        ],
       },
     });
   }
@@ -68,6 +81,16 @@ export class UsersService {
       },
     });
     return plainToClass(ResponseUpdateInfoDto, userUpdated);
+  }
+
+  async signOut(userId: number): Promise<UpdateInfoDto> {
+    const userLogOut = await this.prismaService.user.update({
+      where: { id: userId },
+      data: {
+        active: false,
+      },
+    });
+    return plainToClass(ResponseUpdateInfoDto, userLogOut);
   }
 
   async updateRole(idUser: string, newRole): Promise<UserDto> {

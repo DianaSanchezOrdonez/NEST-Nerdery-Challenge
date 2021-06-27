@@ -43,31 +43,31 @@ model User {
 
 model Author {
   id Int @default(autoincrement()) @id
-  fullName String @map(name: "full_name")
+  fullName String @unique @map(name: "full_name")
 
-  books Book[]
+  books Book[] @relation("AuthorArticles")
 }
 
 model Category {
   id Int @default(autoincrement()) @id
-  name String 
+  name String @unique
 
-  books Book[]  @relation(references: [id])
+  books Book[] 
 }
 
 model Book {
   id Int @default(autoincrement()) @id
-  title String  @db.VarChar(100) 
+  title String  @unique @db.VarChar(100) 
   description String  @db.VarChar(255)
   yearPublished Int @map(name: "year_published")
-  quantity Int
+  quantity Int @default(0)
   price Float 
   urlImage String @db.VarChar(255) @map(name: "url_image")
-  active Boolean
-
+  active Boolean @default(false)
   authorId Int @map(name: "author_id")
-  author Author @relation(fields: [authorId], references: [id])
-  categories Category[]  @relation(references: [id])
+  categoryId Int @map(name: "category_id")
+  author Author @relation("AuthorArticles",fields: [authorId], references: [id])
+  categories Category[]  @relation(fields: [categoryId],references: [id])
   cards CardItem[]
 }
 
@@ -78,7 +78,6 @@ model CardItem {
   dateCreated DateTime @default(now()) @db.Timestamp(6) @map(name: "date_created") 
 
   userId Int? @map(name: "user_id") 
-
   bookId Int @map(name: "book_id")
   book Book @relation(fields: [bookId], references: [id])
 

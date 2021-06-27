@@ -4,36 +4,26 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CardItem, Prisma } from '@prisma/client';
+import { BooksService } from '../books/books.service';
 import { plainToClass } from 'class-transformer';
-import { PrismaService } from 'common/services/prisma.service';
-import { async } from 'rxjs';
+import { PrismaService } from '../common/services/prisma.service';
 import { ArrayCardItemsDto } from './dto/array-card-items.dto';
 import { CreateItemDto } from './dto/create-item.dto';
 import { ItemCardDto } from './dto/item-card.dto';
 
 @Injectable()
 export class ItemService {
-  constructor(private readonly prismaService: PrismaService) {}
-  async getBook(bookId) {
-    const book = await this.prismaService.book.findUnique({
-      where: { id: bookId },
-    });
-
-    if (!book)
-      throw new NotFoundException(
-        `There's not an book with this Id: ${bookId}`,
-      );
-
-    const { id, description, urlImage, active, ...rest } = book;
-    return rest;
-  }
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly booksService: BooksService,
+  ) {}
 
   async createCardItem(
     userId: number,
     body: CreateItemDto,
   ): Promise<ItemCardDto> {
     const { count, bookId } = body;
-    const book = await this.getBook(bookId);
+    const book = await this.booksService.getActiveBook(bookId);
     if (book.quantity < count) {
       throw new BadRequestException(`The amount ${book.quantity} was exceeded`);
     }
@@ -86,11 +76,16 @@ export class ItemService {
     });
 
     return items.map(async (item) => {
-      const book = await this.getBook(item.bookId);
-      await this.prismaService.book.update({
-        where: { id: item.bookId },
-        data: { quantity: book.quantity - item.count },
-      });
+      const book = await this.booksService.getActiveBook(item.bookId);
+      await this.booksService.updateStockInBook(
+        item.bookId,
+        item.count,
+        book.quantity,
+      );
+      // await this.prismaService.book.update({
+      //   where: { id: item.bookId },
+      //   data: { quantity: book.quantity - item.count },
+      // });
     });
   }
 }

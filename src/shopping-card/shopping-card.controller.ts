@@ -6,7 +6,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ShoppingStatus } from './dto/shopping-status.dto';
 import { ShoppingCardService } from './shopping-card.service';
 
