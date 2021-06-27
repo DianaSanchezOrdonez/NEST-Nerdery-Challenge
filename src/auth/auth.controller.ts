@@ -43,8 +43,8 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch('logout')
-  async logout(@Request() req): Promise<UpdateInfoDto> {
-    return this.authService.signOut(req.user.id);
+  @Post('signout')
+  async logout(@Request() req) {
+    return this.authService.signOut(req.user);
   }
 }

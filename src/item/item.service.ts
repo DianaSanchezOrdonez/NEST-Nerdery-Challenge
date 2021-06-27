@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CardItem, Prisma } from '@prisma/client';
 import { BooksService } from '../books/books.service';
 import { plainToClass } from 'class-transformer';
 import { PrismaService } from '../common/services/prisma.service';
@@ -82,10 +81,6 @@ export class ItemService {
         item.count,
         book.quantity,
       );
-      // await this.prismaService.book.update({
-      //   where: { id: item.bookId },
-      //   data: { quantity: book.quantity - item.count },
-      // });
     });
   }
 }

@@ -84,8 +84,19 @@ export class AuthService {
     return this.createToken(user);
   }
 
-  async signOut(userId: number): Promise<UpdateInfoDto> {
-    const userLogOut = await this.userService.signOut(userId);
-    return plainToClass(ResponseUpdateInfoDto, userLogOut);
+  async signOut(user): Promise<UpdateInfoDto> {
+    return user
+    // const userLogOut = await this.userService.signOut(userId);
+    // return plainToClass(ResponseUpdateInfoDto, userLogOut);
   }
+
+  // async signOut(userId: number): Promise<UpdateInfoDto> {
+  //   const userLogOut = await this.prismaService.user.update({
+  //     where: { id: userId },
+  //     data: {
+  //       active: false,
+  //     },
+  //   });
+  //   return plainToClass(ResponseUpdateInfoDto, userLogOut);
+  // }
 }
