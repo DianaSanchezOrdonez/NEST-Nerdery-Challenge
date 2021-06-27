@@ -6,9 +6,12 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ShoppingStatus } from './dto/shopping-status.dto';
 import { ShoppingCardService } from './shopping-card.service';
+import { Role } from '../common/enums/role.enum';
+import { RolesGuard } from '../common/guards/roles.guard';
 
 @Controller('buy')
 export class ShoppingCardController {
@@ -17,17 +20,19 @@ export class ShoppingCardController {
   @UseGuards(JwtAuthGuard)
   @Get()
   getShoppingProducts(@Request() req) {
-    return this.shoppingService.getProductsPurchase(req.user.id);
+    return this.shoppingService.getPaidProductsForUser(req.user.id);
   }
-
-  // @Get('paid')
-  // getPaidProducts() {
-  //   return this.shoppingService.getShoppingPaid();
-  // }
 
   @UseGuards(JwtAuthGuard)
   @Post()
   buyProducts(@Request() req, @Body() status: ShoppingStatus) {
     return this.shoppingService.createPurchase(req.user.id, status);
+  }
+
+  @Roles(Role.MANAGER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('/history')
+  getHistoryShopping() {
+    return this.shoppingService.getHistoryShopping();
   }
 }

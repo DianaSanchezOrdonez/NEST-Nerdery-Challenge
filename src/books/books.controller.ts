@@ -29,9 +29,18 @@ export class BooksController {
     return this.bookService.createBook(createBook);
   }
 
+  @Roles(Role.MANAGER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   getBooks(): Promise<Book[]> {
     return this.bookService.getBooks();
+  }
+
+  @Roles(Role.CLIENT)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('/active')
+  getBooksActive(): Promise<Book[]> {
+    return this.bookService.getBooksActive();
   }
 
   @Roles(Role.MANAGER)

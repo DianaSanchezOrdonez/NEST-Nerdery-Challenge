@@ -34,6 +34,12 @@ export class BooksService {
     return await this.prismaService.book.findMany();
   }
 
+  async getBooksActive(): Promise<Book[]> {
+    return await this.prismaService.book.findMany({
+      where: { active: true },
+    });
+  }
+
   async updateBook(bookId: number, updateBookDto) {
     let category;
     if (updateBookDto.categoryName) {
@@ -132,9 +138,16 @@ export class BooksService {
   }
 
   async updateStockInBook(bookId: number, count: number, quantity: number) {
-    return await this.prismaService.book.update({
+    const book = await this.prismaService.book.update({
       where: { id: bookId },
       data: { quantity: quantity - count },
     });
+    if (book.quantity === 0) {
+      await this.prismaService.book.update({
+        where: { id: book.id },
+        data: { active: false },
+      });
+    }
+    return book;
   }
 }
