@@ -87,9 +87,16 @@ describe('Valid User Method', () => {
 describe('Create JWT to SignIn', () => {
   it('should return access token', async () => {
     const res = await service.signIn({
+      id: 1,
+      firstName:'',
+      lastName:'',
       username: 'test',
-      userId: '1',
+      email: 'test@test.com',
       role: 'CLIENT',
+      active: true,
+      password: 'Password123',
+      emailVerified: true,
+      hashActivation: '',
     });
     expect(res.access_token).toBeDefined();
   });
@@ -98,4 +105,3 @@ describe('Create JWT to SignIn', () => {
 afterAll(async () => {
   await prismaService.user.deleteMany();
 });
-

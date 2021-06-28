@@ -21,6 +21,12 @@ import { ItemController } from './item/item.controller';
 import { ShoppingCardService } from './shopping-card/shopping-card.service';
 import { ShoppingCardController } from './shopping-card/shopping-card.controller';
 import { ShoppingCardModule } from './shopping-card/shopping-card.module';
+import { AttachmentsService } from './attachments/attachments.service';
+import { AttachmentsModule } from './attachments/attachments.module';
+import { AttachmentsController } from './attachments/attachments.controller';
+import { SearchBookService } from './search-book/search-book.service';
+import { SearchBookController } from './search-book/search-book.controller';
+import { SearchBookModule } from './search-book/search-book.module';
 
 @Module({
   imports: [
@@ -32,6 +38,8 @@ import { ShoppingCardModule } from './shopping-card/shopping-card.module';
     BooksModule,
     ItemModule,
     ShoppingCardModule,
+    AttachmentsModule,
+    SearchBookModule,
   ],
   controllers: [
     AppController,
@@ -40,6 +48,8 @@ import { ShoppingCardModule } from './shopping-card/shopping-card.module';
     BooksController,
     ItemController,
     ShoppingCardController,
+    AttachmentsController,
+    SearchBookController,
   ],
   providers: [
     AppService,
@@ -50,6 +60,8 @@ import { ShoppingCardModule } from './shopping-card/shopping-card.module';
     CategoryService,
     ItemService,
     ShoppingCardService,
+    AttachmentsService,
+    SearchBookService,
   ],
 })
 export class AppModule {}

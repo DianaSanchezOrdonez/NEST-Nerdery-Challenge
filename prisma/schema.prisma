@@ -63,12 +63,15 @@ model Book {
   quantity Int @default(0)
   price Float 
   urlImage String @db.VarChar(255) @map(name: "url_image")
-  active Boolean @default(false)
+  active Boolean @default(true)
   authorId Int @map(name: "author_id")
   categoryId Int @map(name: "category_id")
   author Author @relation("AuthorArticles",fields: [authorId], references: [id])
   categories Category[]  @relation(fields: [categoryId],references: [id])
   cards CardItem[]
+
+  image    Attachment?      @relation(fields: [imageId], references: [id])
+  imageId  Int?             @map(name: "image_id")
 }
 
 model CardItem {
@@ -93,4 +96,25 @@ model ShoppingCard {
   userId Int @map(name: "user_id")
   user User @relation(fields: [userId], references: [id])
   CardItem CardItem[]
+}
+
+// model Attachment {
+//   id          Int      @id @default(autoincrement())
+//   uuid        String   @unique @default(uuid())
+//   path        String
+//   key         String
+//   ext         String
+//   contentType String   @map(name: "content_type")
+
+//   books       Book[]
+//   createdAt   DateTime @default(now()) @map(name: "created_at")
+// }
+
+model Attachment {
+  id          Int      @id @default(autoincrement())
+  key         String
+  url         String
+
+  books       Book[]
+  createdAt   DateTime @default(now()) @map(name: "created_at")
 }

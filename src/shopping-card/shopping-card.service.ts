@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ShoppingCard } from '@prisma/client';
 import { PrismaService } from '../common/services/prisma.service';
 import { ItemService } from '../item/item.service';
 
@@ -10,16 +9,10 @@ export class ShoppingCardService {
     private readonly itemsService: ItemService,
   ) {}
 
-  async getPaidProductsForUser(userId): Promise<ShoppingCard[]> {
+  async getProductsPurchase(userId) {
     return await this.prismaService.shoppingCard.findMany({
-      where: {
-        AND: [{ userId }, { status: 'PAID' }],
-      },
+      where: { userId },
     });
-  }
-
-  async getHistoryShopping(): Promise<ShoppingCard[]> {
-    return await this.prismaService.shoppingCard.findMany();
   }
 
   async createPurchase(userId: number, newStatus) {

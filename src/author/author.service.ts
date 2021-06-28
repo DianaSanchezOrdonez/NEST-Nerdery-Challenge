@@ -11,7 +11,7 @@ export class AuthorService {
 
   async getAuthors(paginationQuery: PaginationQueryDto): Promise<Author[]> {
     const { page, perPage } = paginationQuery;
-    const paginationParams = paginatedHelper({ page, perPage })
+    const paginationParams = paginatedHelper({ page, perPage });
     return await this.prismaService.author.findMany({
       ...paginationParams,
     });

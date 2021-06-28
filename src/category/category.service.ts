@@ -36,4 +36,14 @@ export class CategoryService {
       },
     });
   }
+
+  async getCategoryByName(nameCategory: string): Promise<Category> {
+    const category = await this.prismaService.category.findUnique({
+      where: { name: nameCategory },
+    });
+    if (!category) {
+      throw new NotFoundException(`${nameCategory} is not a valid category`);
+    }
+    return category;
+  }
 }

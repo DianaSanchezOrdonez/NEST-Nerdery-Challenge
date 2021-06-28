@@ -22,7 +22,7 @@ export class ItemService {
     body: CreateItemDto,
   ): Promise<ItemCardDto> {
     const { count, bookId } = body;
-    const book = await this.booksService.getActiveBook(bookId);
+    const book = await this.booksService.getOneBookActive(bookId);
     if (book.quantity < count) {
       throw new BadRequestException(`The amount ${book.quantity} was exceeded`);
     }
@@ -75,7 +75,7 @@ export class ItemService {
     });
 
     return items.map(async (item) => {
-      const book = await this.booksService.getActiveBook(item.bookId);
+      const book = await this.booksService.getOneBookActive(item.bookId);
       await this.booksService.updateStockInBook(
         item.bookId,
         item.count,

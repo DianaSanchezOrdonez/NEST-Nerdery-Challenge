@@ -12,4 +12,6 @@ export class UpdateInfoDto {
   password?: string;
   @IsOptional()
   username?: string;
+  @IsOptional()
+  active?: boolean;
 }

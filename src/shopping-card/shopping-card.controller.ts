@@ -6,33 +6,27 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { Roles } from '../common/decorators/roles.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ShoppingStatus } from './dto/shopping-status.dto';
 import { ShoppingCardService } from './shopping-card.service';
-import { Role } from '../common/enums/role.enum';
-import { RolesGuard } from '../common/guards/roles.guard';
 
+@ApiTags('Shopping_Cart')
 @Controller('buy')
 export class ShoppingCardController {
   constructor(private readonly shoppingService: ShoppingCardService) {}
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access_token')
   @Get()
   getShoppingProducts(@Request() req) {
-    return this.shoppingService.getPaidProductsForUser(req.user.id);
+    return this.shoppingService.getProductsPurchase(req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access_token')
   @Post()
   buyProducts(@Request() req, @Body() status: ShoppingStatus) {
     return this.shoppingService.createPurchase(req.user.id, status);
-  }
-
-  @Roles(Role.MANAGER)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Get('/history')
-  getHistoryShopping() {
-    return this.shoppingService.getHistoryShopping();
   }
 }

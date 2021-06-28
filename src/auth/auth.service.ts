@@ -16,8 +16,10 @@ import { PayloadUserDto } from './dto/payload.dto';
 import { UserDto } from '../users/dto/user.dto';
 import { ResponseUpdateInfoDto } from '../users/dto/responseUser.dto';
 import { plainToClass } from 'class-transformer';
+import { User } from '@prisma/client';
 import { UpdateInfoDto } from '../users/dto/update-user.dto';
-import { InputInfoUserDto } from 'users/dto/input-user.dto';
+import { InputInfoUserDto } from '../users/dto/input-user.dto';
+import { access } from 'fs';
 
 @Injectable()
 export class AuthService {
@@ -41,7 +43,7 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<UserDto> {
     const userStored = await this.userService.findOne(email);
     if (!userStored) {
-      throw new BadRequestException('Email or password is required');
+      throw new BadRequestException('Not found user');
     }
     const passwordChecked = await this.checkPassword(
       password,
@@ -56,13 +58,18 @@ export class AuthService {
   }
 
   async createToken(user): Promise<TokenDto> {
-    const payload = { id: user.id, username: user.username, role: user.role };
+    const payload = {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+    };
+
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
-  async signUp(dataRegister: InputInfoUserDto) {
+  async signUp(dataRegister: DataUserDto) {
     const confirmationCode = generateHash();
     await this.userService.createUser(dataRegister, confirmationCode);
     await this.sengridService.sendMailOfConfirmationCode(
@@ -77,10 +84,16 @@ export class AuthService {
   async confirmEmail(tokenEmail) {
     const user = await this.userService.findUserWithToken(tokenEmail);
     if (!user) throw new NotFoundException('Not found User');
+    await this.userService.updateUser(user.id, {
+      active: true,
+    });
     return this.createToken(user);
   }
 
-  async signIn(user: PayloadUserDto) {
+  async signIn(user: User, body) {
+    await this.userService.updateUser(user.id, {
+      active: true,
+    });
     return this.createToken(user);
   }
 
