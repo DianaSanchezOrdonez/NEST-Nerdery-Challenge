@@ -13,11 +13,12 @@ import {
 export class UpdateBookDto {
   @IsString()
   @IsOptional()
-  readonly title: string;
+  @IsNotEmpty()
+  readonly title?: string;
 
   @IsString()
   @IsOptional()
-  readonly description: string;
+  readonly description?: string;
 
   @IsNumber()
   @IsOptional()
@@ -26,7 +27,7 @@ export class UpdateBookDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly quantity: number;
+  readonly quantity?: number;
 
   @IsNumber()
   @IsPositive()
@@ -35,7 +36,8 @@ export class UpdateBookDto {
 
   @IsString()
   @IsOptional()
-  readonly urlImage: string;
+  @IsNotEmpty()
+  readonly urlImage?: string;
 
   @IsString()
   @IsOptional()

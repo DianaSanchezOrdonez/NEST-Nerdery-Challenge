@@ -13,6 +13,6 @@ export class ResponseBookDto {
   categoryId: number;
   @Exclude()
   urlImage: string;
-  @Exclude()
   active: boolean;
+  likesQuantity: number;
 }

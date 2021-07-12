@@ -63,7 +63,7 @@ model Book {
   yearPublished Int @map(name: "year_published")
   quantity Int @default(0)
   price Float 
-  urlImage String @db.VarChar(255) @map(name: "url_image")
+  urlImage String? @db.VarChar(255) @map(name: "url_image")
   active Boolean @default(true)
   authorId Int @map(name: "author_id")
   categoryId Int @map(name: "category_id")
@@ -103,28 +103,28 @@ model ShoppingCard {
 model BooksLikes{
   id Int @id @default(autoincrement())
   userId Int @map(name:"user_id")
-  bookId Int @map(name: "book_id")
+  bookId Int? @map(name: "book_id")
   like Boolean @default(false)
   user User @relation(fields: [userId], references:[id])
-  book Book  @relation(fields: [bookId], references:[id])
+  book Book?  @relation(fields: [bookId], references:[id])
 }
-// model Attachment {
-//   id          Int      @id @default(autoincrement())
-//   uuid        String   @unique @default(uuid())
-//   path        String
-//   key         String
-//   ext         String
-//   contentType String   @map(name: "content_type")
-
-//   books       Book[]
-//   createdAt   DateTime @default(now()) @map(name: "created_at")
-// }
 
 model Attachment {
   id          Int      @id @default(autoincrement())
   key         String
-  url         String
+  ext         String
+  contentType String   @map(name: "content_type")
 
+  bookId      Int?     @map(name: "book_id")
   books       Book[]
   createdAt   DateTime @default(now()) @map(name: "created_at")
 }
+
+// model Attachment {
+//   id          Int      @id @default(autoincrement())
+//   key         String
+//   url         String
+
+//   books       Book[]
+//   createdAt   DateTime @default(now()) @map(name: "created_at")
+// }

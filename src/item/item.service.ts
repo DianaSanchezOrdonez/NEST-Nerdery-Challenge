@@ -10,12 +10,14 @@ import { PrismaService } from '../common/services/prisma.service';
 import { ArrayCardItemsDto } from './dto/array-card-items.dto';
 import { CreateItemDto } from './dto/create-item.dto';
 import { ItemCardDto } from './dto/item-card.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class ItemService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly booksService: BooksService,
+    private readonly userService: UsersService,
   ) {}
 
   async createCardItem(
@@ -24,11 +26,11 @@ export class ItemService {
   ): Promise<ItemCardDto> {
     const { count, bookId } = body;
     const book = await this.booksService.getOneBookActive(bookId);
-    if (book.quantity < count) {
-      throw new BadRequestException(`The amount ${book.quantity} was exceeded`);
-    }
     if (book.quantity === 0) {
       throw new BadRequestException(`Stock sold out: ${book.title}`);
+    }
+    if (book.quantity < count) {
+      throw new BadRequestException(`The amount ${book.quantity} was exceeded`);
     }
     const cardItem = await this.prismaService.cardItem.create({
       data: {
@@ -39,16 +41,16 @@ export class ItemService {
       },
     });
 
-    const cardWithBook = { ...book, ...cardItem };
-    return plainToClass(ItemCardDto, cardWithBook);
+    return plainToClass(ItemCardDto, { ...book, ...cardItem });
   }
 
   async getCardItemFromUser(userId: number): Promise<ArrayCardItemsDto[]> {
+    const user = await this.userService.findOneId(userId);
     const cardItems = await this.prismaService.cardItem.findMany({
       where: {
         AND: [
           {
-            userId: userId,
+            userId: user.id,
           },
           { shoppingId: null },
         ],
@@ -82,10 +84,6 @@ export class ItemService {
         item.count,
         book.quantity,
       );
-      // await this.prismaService.book.update({
-      //   where: { id: item.bookId },
-      //   data: { quantity: book.quantity - item.count },
-      // });
     });
   }
 }

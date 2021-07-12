@@ -1,5 +1,5 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { NumberCapabilityList } from 'aws-sdk/clients/sns';
 import { plainToClass } from 'class-transformer';
 import { CommonModule } from '../common/common.module';
 import { generateHash } from '../common/helpers/generator-hash.helper';
@@ -7,16 +7,11 @@ import { PrismaService } from '../common/services/prisma.service';
 import { InputInfoUserDto } from './dto/input-user.dto';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { HttpExceptionFilter } from '../common/filters/http-exception.filter';
-import { AppModule } from 'app.module';
-import { validate } from 'class-validator';
-import { Role } from '../common/enums/role.enum';
 
 let service: UsersService;
 let prismaService: PrismaService;
-let app: INestApplication;
 
-beforeEach(async () => {
+beforeAll(async () => {
   const module: TestingModule = await Test.createTestingModule({
     imports: [CommonModule],
     providers: [UsersService],
@@ -25,15 +20,11 @@ beforeEach(async () => {
 
   service = module.get<UsersService>(UsersService);
   prismaService = module.get<PrismaService>(PrismaService);
-
-  app = module.createNestApplication();
-  app.useGlobalPipes();
-  app.useGlobalFilters(new HttpExceptionFilter());
-  await app.init();
 });
 
 const confirmationCode = generateHash();
-let userId;
+let userId: number;
+let emailToken: string;
 
 describe('Create User', () => {
   it('should return a user created', async () => {
@@ -46,6 +37,7 @@ describe('Create User', () => {
       confirmationCode,
     );
     userId = res.id;
+    emailToken = confirmationCode;
     expect(res).toHaveProperty('id');
     expect(res.username).toEqual('test');
     expect(res.email).toEqual('test@test.com');
@@ -88,6 +80,27 @@ describe(`Valid if username or email is registered`, () => {
   });
 });
 
+describe(`Find user`, () => {
+  it('return user', async () => {
+    const res = await service.findOne('test@test.com');
+    expect(res).toHaveProperty('id');
+    expect(res.username).toEqual('test');
+  });
+  it('return null value, because the user was not found', async () => {
+    const res = await service.findOne('diferent@test.com');
+    expect(res).toBeNull();
+  });
+  it('return user by emailToken sent', async () => {
+    const res = await service.findUserWithToken(emailToken);
+    expect(res).toHaveProperty('id');
+    expect(res.username).toEqual('test');
+  });
+  it('return null value, because the user with emailToken was not found', async () => {
+    const res = await service.findUserWithToken('diferent@test.com');
+    expect(res).toBeNull();
+  });
+});
+
 describe('Find User With Confirmation Code (Email Token)', () => {
   it('return user with email token valid', async () => {
     const res = await service.findUserWithToken(confirmationCode);
@@ -110,11 +123,15 @@ describe('Update User', () => {
 
 describe('Update User Role', () => {
   it(`Update role 'CLIENT' to 'MANAGER'`, async () => {
-    const res = await service.updateRole(userId, { role: 'MANAGER' });
+    const res = await service.updateRole(userId.toString(), {
+      role: 'MANAGER',
+    });
     expect(res.role).toEqual('MANAGER');
   });
 });
 
 afterAll(async () => {
-  await prismaService.user.deleteMany();
+  await prismaService.user.delete({
+    where: { id: userId },
+  });
 });

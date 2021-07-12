@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Author } from '@prisma/client';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { paginatedHelper } from '../common/helpers/paginated.helper';
@@ -18,6 +22,9 @@ export class AuthorService {
   }
 
   async getAuthor(idAuthor: string): Promise<Author> {
+    if (!Number(idAuthor)) {
+      throw new BadRequestException(`${idAuthor} must be a number`);
+    }
     const author = await this.prismaService.author.findUnique({
       where: { id: Number(idAuthor) },
     });
@@ -29,17 +36,12 @@ export class AuthorService {
   }
 
   async createAuthor(createAuthor: CreateAuthorDto): Promise<Author> {
-    const author = await this.prismaService.author.findFirst({
+    return await this.prismaService.author.upsert({
       where: { fullName: createAuthor.fullName },
-    });
-    if (author) {
-      throw new NotFoundException('The author has already exist');
-    }
-
-    return await this.prismaService.author.create({
-      data: {
+      create: {
         fullName: createAuthor.fullName,
       },
+      update: {},
     });
   }
 }

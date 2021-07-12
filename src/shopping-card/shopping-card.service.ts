@@ -9,6 +9,10 @@ export class ShoppingCardService {
     private readonly itemsService: ItemService,
   ) {}
 
+  async getAllPurchase() {
+    return await this.prismaService.shoppingCard.findMany()
+  }
+
   async getProductsPurchase(userId) {
     return await this.prismaService.shoppingCard.findMany({
       where: { userId },

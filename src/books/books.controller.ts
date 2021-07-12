@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Body,
   Controller,
@@ -27,7 +28,9 @@ import { Express } from 'express';
 import {
   ApiBearerAuth,
   ApiConsumes,
+  ApiHeader,
   ApiOperation,
+  ApiProduces,
   ApiTags,
 } from '@nestjs/swagger';
 import { ApiFile } from '../common/helpers/upload-swagger-decorator';
@@ -44,7 +47,6 @@ export class BooksController {
   @ApiBearerAuth('access_token')
   @Post()
   createBook(@Body() createBook: CreateBookDto): Promise<Book> {
-    console.log(createBook);
     return this.bookService.createBook(createBook);
   }
 
@@ -64,10 +66,10 @@ export class BooksController {
     return this.bookService.getBooks(paginationQuery);
   }
 
-  // See active books details costumer
+  // See active book details costumer
   @Get('/:idBook')
   getOneBook(@Param('idBook') id: number): Promise<DetailBookDto> {
-    return this.bookService.getOneBook(id);
+    return this.bookService.getOneBookActive(id);
   }
 
   // Likes to books by costumer
@@ -83,7 +85,7 @@ export class BooksController {
     return this.bookService.processLikes(bookId, req.user.id, dataLike);
   }
 
-  //Updatae books manager
+  //Update books manager
   @Roles(Role.MANAGER)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({ summary: 'Only MANAGER access' })
@@ -116,23 +118,25 @@ export class BooksController {
     return this.bookService.deleteBook(id);
   }
 
+  //Get upload images endpoint
   @Roles(Role.MANAGER)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @UseInterceptors(FileInterceptor('file'))
+  @Post('/:id/image')
   @ApiOperation({ summary: 'Only MANAGER access' })
   @ApiBearerAuth('access_token')
-  @Post(':id/attachment')
-  @ApiConsumes('multipart/form-data')
-  @ApiFile('file')
-  addUrlImage(
-    @Param('id') id: number,
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<Book> {
-    return this.bookService.addUrlImage(id, file.buffer, file.originalname);
+  //@ApiConsumes('image/png')
+  //@ApiHeader({ name: 'content-type' })
+  endpointToUpload(@Request() req, @Param('id') id: number) {
+    return this.bookService.endpointToUpload(req.headers['content-type'], id);
   }
 
-  // @Get('/test/:id')
-  // geOneActive(@Param('id') id: string) {
-  //   return this.bookService.getOneBookActive(Number(id))
+  @Patch('/:id/image')
+  uploadUrlImage(@Param('id') id: number) {
+    return this.bookService.uploadUrlImage(id);
+  }
+
+  // @Get('/:id/image')
+  // getUrl(@Param('id') id: number){
+  //   return this.bookService.getUrlImages(id)
   // }
 }

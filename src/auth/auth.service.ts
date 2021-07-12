@@ -14,12 +14,11 @@ import { TokenDto } from './dto/token.dto';
 import { DataUserDto } from './dto/dataUser.dto';
 import { PayloadUserDto } from './dto/payload.dto';
 import { UserDto } from '../users/dto/user.dto';
-import { ResponseUpdateInfoDto } from '../users/dto/responseUser.dto';
-import { plainToClass } from 'class-transformer';
 import { User } from '@prisma/client';
 import { UpdateInfoDto } from '../users/dto/update-user.dto';
 import { InputInfoUserDto } from '../users/dto/input-user.dto';
 import { access } from 'fs';
+import { MessageDto } from './dto/message.dto';
 
 @Injectable()
 export class AuthService {
@@ -42,9 +41,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<UserDto> {
     const userStored = await this.userService.findOne(email);
-    if (!userStored) {
-      throw new BadRequestException('Not found user');
-    }
+    if (!userStored) throw new BadRequestException('Not found user');
     const passwordChecked = await this.checkPassword(
       password,
       userStored.password,
@@ -69,16 +66,13 @@ export class AuthService {
     };
   }
 
-  async signUp(dataRegister: DataUserDto) {
+  async signUp(dataRegister: DataUserDto): Promise<void> {
     const confirmationCode = generateHash();
     await this.userService.createUser(dataRegister, confirmationCode);
     await this.sengridService.sendMailOfConfirmationCode(
       dataRegister.email,
       confirmationCode,
     );
-    return {
-      message: 'Check your email',
-    };
   }
 
   async confirmEmail(tokenEmail) {
@@ -90,15 +84,17 @@ export class AuthService {
     return this.createToken(user);
   }
 
-  async signIn(user: User, body) {
+  async signIn(user: User) {
     await this.userService.updateUser(user.id, {
       active: true,
     });
     return this.createToken(user);
   }
 
-  async signOut(userId: number): Promise<UpdateInfoDto> {
-    const userLogOut = await this.userService.signOut(userId);
-    return plainToClass(ResponseUpdateInfoDto, userLogOut);
+  //JTI 
+  async signOut(userId: number): Promise<void> {
+    await this.userService.updateUser(userId, {
+      active: false,
+    });
   }
 }

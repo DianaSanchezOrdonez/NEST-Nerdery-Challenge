@@ -13,4 +13,5 @@ export class DetailBookDto {
   active: boolean;
   categoryId: number;
   authorId: number;
+  likesQuantity: number;
 }

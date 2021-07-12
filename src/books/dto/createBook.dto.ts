@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import { Exclude } from 'class-transformer';
 import {
   IsDecimal,
   IsNotEmpty,
@@ -23,7 +24,7 @@ export class CreateBookDto {
   @IsNumber()
   readonly price: number
   
-  @IsString()
+  @Exclude()
   readonly urlImage?: string;
 
   @IsPositive()

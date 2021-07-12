@@ -9,18 +9,19 @@ import { JwtStrategy } from './jwt.strategy';
 import { LocalStrategy } from './local.strategy';
 import { InputInfoUserDto } from '../users/dto/input-user.dto';
 import { plainToClass } from 'class-transformer';
+import { UserDto } from '../users/dto/user.dto';
 
 let service: AuthService;
 let prismaService: PrismaService;
 
-beforeEach(async () => {
+beforeAll(async () => {
   const module: TestingModule = await Test.createTestingModule({
     imports: [
       CommonModule,
       UsersModule,
       PassportModule,
       JwtModule.register({
-        secret: 'SECRET',
+        secret: 'SECRET_TOKEN',
         signOptions: { expiresIn: '1d' },
       }),
     ],
@@ -30,6 +31,8 @@ beforeEach(async () => {
   service = module.get<AuthService>(AuthService);
   prismaService = module.get<PrismaService>(PrismaService);
 });
+
+let user: UserDto;
 
 describe('Valid SignUp to User', () => {
   it('should return a check your email message', async () => {
@@ -52,13 +55,11 @@ describe('Valid SignUp to User', () => {
 
   it('should return required fields', async () => {
     await expect(
-      service.signUp(
-        plainToClass(InputInfoUserDto, {
-          username: '',
-          email: '',
-          password: '',
-        }),
-      ),
+      service.signUp({
+        username: '',
+        email: '',
+        password: '',
+      }),
     ).rejects.toThrow(`Password can't be empty`);
   });
 });
@@ -66,42 +67,60 @@ describe('Valid SignUp to User', () => {
 describe('Valid User Method', () => {
   it('should return user', async () => {
     const res = await service.validateUser('test@test.com', 'Password123');
+    user = res;
     expect(res).toHaveProperty('id');
     expect(res.username).toEqual('test');
     expect(res.email).toEqual('test@test.com');
   });
 
-  it('should return invalid message', async () => {
+  it('send a incorrect password', async () => {
     await expect(
       service.validateUser('test@test.com', 'password'),
     ).rejects.toThrow('Password or email is wrong');
   });
 
-  it('should return required field', async () => {
-    await expect(service.validateUser('', '')).rejects.toThrow(
-      'Email or password is required',
-    );
+  it('send a user email not registered', async () => {
+    await expect(
+      service.validateUser('test123@test.com', 'password'),
+    ).rejects.toThrow('Not found user');
+  });
+});
+
+describe('Valid SignOut Method', () => {
+  it('should return message logout success', async () => {
+    const res = await service.signOut(user.id);
+    expect(res.message).toEqual('Successful logout');
+  });
+
+  it('Valid a status of user after signout method', async () => {
+    const res = user;
+    expect(res.active).toEqual(false);
   });
 });
 
 describe('Create JWT to SignIn', () => {
   it('should return access token', async () => {
-    const res = await service.signIn({
-      id: 1,
-      firstName:'',
-      lastName:'',
-      username: 'test',
-      email: 'test@test.com',
-      role: 'CLIENT',
-      active: true,
-      password: 'Password123',
-      emailVerified: true,
-      hashActivation: '',
-    });
+    const res = await service.signIn(
+      {
+        id: user.id,
+        firstName: '',
+        lastName: '',
+        username: 'test',
+        email: 'test@test.com',
+        role: 'CLIENT',
+        active: true,
+        password: 'Password123',
+        emailVerified: true,
+        hashActivation: '',
+      },
+      ' ',
+    );
     expect(res.access_token).toBeDefined();
   });
 });
 
 afterAll(async () => {
-  await prismaService.user.deleteMany();
+  await prismaService.user.delete({
+    where: { id: user.id },
+  });
 });

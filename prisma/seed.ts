@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { hashSync } from 'bcrypt';
 
@@ -43,7 +42,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    Logger.error(e);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {

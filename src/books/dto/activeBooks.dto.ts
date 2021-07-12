@@ -18,4 +18,5 @@ export class ActiveBookDto {
   categoryId: number;
   @Exclude()
   authorId: number;
+  likesQuantity: number;
 }

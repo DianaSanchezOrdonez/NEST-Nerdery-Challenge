@@ -2,7 +2,6 @@ import { Decimal } from '@prisma/client/runtime';
 import { Exclude } from 'class-transformer';
 
 export class ItemCardDto {
-  @Exclude()
   id: number;
   title: string;
   @Exclude()

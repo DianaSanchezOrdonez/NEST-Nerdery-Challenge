@@ -13,7 +13,6 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { InputInfoUserDto } from '../users/dto/input-user.dto';
 import { AuthService } from './auth.service';
 import { MessageDto } from './dto/message.dto';
-import { SigninUserDto } from './dto/signin-user.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
 
@@ -24,13 +23,13 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('signin')
-  async signin(@Request() req, @Body() body: SigninUserDto) {
-    return this.authService.signIn(req.user, body);
+  async signin(@Request() req) {
+    return this.authService.signIn(req.user);
   }
 
   @Post('signup')
-  async signup(@Body() body: InputInfoUserDto): Promise<MessageDto> {
-    return this.authService.signUp(body);
+  async signup(@Body() body: InputInfoUserDto): Promise<void> {
+    await this.authService.signUp(body);
   }
 
   @Post('confirm/:tokenEmail')
@@ -49,10 +48,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access_token')
   @Patch('signout')
-  async logout(@Request() req): Promise<MessageDto> {
-    //return await this.authService.signOut(req.user.id);
-    return await {
-      message: 'Successful logout',
-    };
+  async logout(@Request() req): Promise<void> {
+    await this.authService.signOut(req.user.id);
   }
 }
